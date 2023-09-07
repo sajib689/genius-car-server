@@ -6,7 +6,6 @@ const port = process.env.PORT || 3000;
 require('dotenv').config()
 app.use(cors())
 app.use(express.json())
-const services = require('./services.json')
 
 
 
@@ -25,6 +24,12 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const servicesCollection = client.db('carDoctors').collection('services');
+    // get data from database
+    app.get('/services', async(req, res) => {
+        const result = await servicesCollection.find().toArray();
+        res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -38,9 +43,7 @@ run().catch(console.dir);
 app.get('/', (req, res) => {
     res.send('Welcome the server is response')
 })
-app.get('/services', (req, res) => {
-    res.send(services)
-})
+
 app.listen(port, () => {
     console.log(`The response port ${port}`)
 })
