@@ -52,8 +52,39 @@ async function run() {
     })
     // get order data from database
     app.get('/orders', async (req, res) => {
-      const order = await ordersCollection.find().toArray()
+      console.log(req.query.email)
+      let query = {}
+      if(req.query?.email){
+        query = {email: req.query.email}
+      }
+      const order = await ordersCollection.find(query).toArray()
       res.send(order)
+    })
+    // post api for send service data form client to database
+    app.post('/services', async(req, res) => {
+      const add = req.body
+      const result = await servicesCollection.insertOne(add)
+      res.send(result)
+      console.log(add)
+    });
+    // delete single item from client site
+    app.delete('/orders/:id', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await ordersCollection.deleteOne(query)
+      res.send(result)
+    })
+    // api for update data only
+    app.put('/orders:id', async (req, res) => {
+      const id = req.params.id
+      const updateOrder = req.body
+      const query = {_id: new ObjectId(id)}
+      const options = {upsert: true}
+      const updatedOrder = {
+        $set: {
+          
+        }
+      }
     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
