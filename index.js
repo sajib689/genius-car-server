@@ -10,7 +10,7 @@ app.use(express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.2m0rny5.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri)
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -25,6 +25,8 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const servicesCollection = client.db('carDoctors').collection('services');
+    // post orders database connection
+    const ordersCollection = client.db('carDoctors').collection('orders');
     // get data from database
     app.get('/services', async(req, res) => {
         const result = await servicesCollection.find().toArray();
@@ -34,8 +36,24 @@ async function run() {
     app.get('/services/:id', async(req, res) => {
       const id = req.params.id
       const query = {_id: new ObjectId(id)}
-      const result = await servicesCollection.findOne(query)
+      const options = {
+        projection: {title:1, price:1, service_id:1, img:1},
+      }
+      const result = await servicesCollection.findOne(query,options)
       res.send(result)
+    })
+    // post user order form client to database
+    app.post('/orders', async(req, res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const cursor = req.body
+      const result = await ordersCollection.insertOne(cursor)
+      res.send(result)
+    })
+    // get order data from database
+    app.get('/orders', async (req, res) => {
+      const order = await ordersCollection.find().toArray()
+      res.send(order)
     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
