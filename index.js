@@ -75,16 +75,17 @@ async function run() {
       res.send(result)
     })
     // api for update data only
-    app.put('/orders:id', async (req, res) => {
+    app.patch('/orders/:id', async (req, res) => {
       const id = req.params.id
       const updateOrder = req.body
-      const query = {_id: new ObjectId(id)}
-      const options = {upsert: true}
+      const filter = {_id: new ObjectId(id)}
       const updatedOrder = {
         $set: {
-          
+          status: updateOrder.status
         }
       }
+      const result = await ordersCollection.updateOne(filter, updatedOrder)
+      res.send(result)
     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
